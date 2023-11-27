@@ -9,3 +9,7 @@ div p{
     display:inline;
     width: auto;
 }
+
+.ball{
+    clip-path: circle(50px);
+}
