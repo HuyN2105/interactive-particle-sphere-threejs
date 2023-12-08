@@ -4,14 +4,17 @@ var index = parseInt(params.get("i"), 10);
 
 var indexed = false;
 
+var indexS = 0;
+var indexList = [];
+
 bc.addEventListener("message", e => {
     if(e.data.t=="IndexResponse"){
-        if(index < e.data.ind && !indexed){
-            index = parseInt(e.data.ind, 10);
-            document.getElementById("WindowIndex").textContent = index;
-        }
+        indexS+=e.data.ind;
+        indexList.push(e.data.ind);
     }
-    else if(e.data=="IndexRequest") bc.postMessage({t: "IndexResponse", ind: index+1});
+    else if(e.data=="IndexRequest") {
+        bc.postMessage({t: "IndexResponse", ind: index});
+    }
     else document.getElementById("ReceivedMessage").textContent = e.data;
 });
 
@@ -21,12 +24,26 @@ if(params.size==0){
 }
 index = parseInt(params.get("i"), 10);
 
-document.getElementById("WindowIndex").textContent = index
-
-document.getElementById("send").addEventListener("click", ()=>{
-    bc.postMessage(document.getElementById("message").value);
-});
-
 window.onload = ()=>{
-    setTimeout(()=>{indexed = true;}, 150);
+    setTimeout(()=>{        
+        indexList.sort;
+        console.log(indexList)
+        let s = indexList.length;
+        if(s==0) index = 1;
+        else{
+            index = (indexList[s-1] + 1)*indexList[s-1]/2 - indexS;
+            index = (index<=0?indexList[s-1]+1:index);
+        }
+        document.getElementById("WindowIndex").textContent = index;
+        indexed = true;
+    }, 200);
+
+    setTimeout(()=>{
+        indexList.forEach((i) => {
+            let t = document.createElement("div");
+            t.setAttribute("id", i);
+            document.getElementById("OtherPartner").append(String(i), t);
+        })
+    }, 200);
+
 }
