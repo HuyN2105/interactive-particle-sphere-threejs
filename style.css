@@ -13,3 +13,33 @@ div p{
 .ball{
     clip-path: circle(50px);
 }
+
+#OtherPartner p{
+    margin: 2.5px;
+}
+
+#director{
+    position:fixed;
+    width: 200px;
+    height: 200px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#outerBox{
+    width: 100%;
+    height: 100%;
+    border: 8px solid #333;
+}
+
+#ball{
+    position: fixed;
+    width: 25%;
+    height: 25%;
+    top: 100px;
+    left: 100px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background-color: aqua;
+}

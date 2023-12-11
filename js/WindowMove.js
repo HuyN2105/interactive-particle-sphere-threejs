@@ -1,3 +1,5 @@
+const bc = new BroadcastChannel("channel");
+
 var MovingState = "False";
 
 var coordinate = {
@@ -20,6 +22,7 @@ setInterval(()=>{
         cox.textContent = coordinate.x;
         coy.textContent = coordinate.y;
         MovingState = "True";
+        bc.postMessage({Request: "CoordinateChange", PartnerID: Index, coordinate: coordinate});
     }else{
         MovingState = "False";
     }

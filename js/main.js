@@ -1,49 +1,95 @@
 const bc = new BroadcastChannel("channel");
-const params = new URLSearchParams(document.location.search);
-var index = parseInt(params.get("i"), 10);
-
-var indexed = false;
-
-var indexS = 0;
-var indexList = [];
 
 bc.addEventListener("message", e => {
-    if(e.data.t=="IndexResponse"){
-        indexS+=e.data.ind;
-        indexList.push(e.data.ind);
+    if(e.data.Request=="CoordinateChange"){
+        document.getElementById(String(e.data.PartnerID)+"X").textContent = e.data.Coordinate.x;
+        document.getElementById(String(e.data.PartnerID)+"Y").textContent = e.data.Coordinate.y;
+        var t1 = e.data.Coordinate.y - window.screenY, t2 = e.data.Coordinate.x - window.screenX;
+        document.getElementById("ball").style.left = (t2<0?0:(t2>200?200:t2));
+        document.getElementById("ball").style.top = (t1<0?0:(t1>200?200:t1));
+        console.log({top: t1, left: t2});
     }
-    else if(e.data=="IndexRequest") {
-        bc.postMessage({t: "IndexResponse", ind: index});
-    }
-    else document.getElementById("ReceivedMessage").textContent = e.data;
 });
 
-if(params.size==0){
-    params.append("i", 1);
-    bc.postMessage("IndexRequest");
-}
-index = parseInt(params.get("i"), 10);
+var Index;
 
-window.onload = ()=>{
-    setTimeout(()=>{        
-        indexList.sort;
-        console.log(indexList)
-        let s = indexList.length;
-        if(s==0) index = 1;
-        else{
-            index = (indexList[s-1] + 1)*indexList[s-1]/2 - indexS;
-            index = (index<=0?indexList[s-1]+1:index);
+let PartnerItem = localStorage.getItem("PartnerList");
+console.log(PartnerItem)
+var PartnerList = [];
+
+if(PartnerItem == null){
+    PartnerList = [1];
+    Index = 1;
+    localStorage.setItem("PartnerList", "1");
+}else{
+    PartnerList = PartnerItem.split("-").map(x => parseInt(x, 10));
+    for(var i = 1; i <= PartnerList.length; i++){
+        if(i==PartnerList.length){
+            Index = i+1;
+            PartnerList.splice(Index-1, 0, Index);
+            break;
         }
-        document.getElementById("WindowIndex").textContent = index;
-        indexed = true;
-    }, 200);
+        if(PartnerList[i]>PartnerList[i-1]+1){
+            Index = PartnerList[i-1]+1;
+            PartnerList.splice(i, 0, Index);
+            break;
+        }
+    }
+    localStorage.setItem("PartnerList", PartnerList.join("-"));
+}
 
-    setTimeout(()=>{
-        indexList.forEach((i) => {
-            let t = document.createElement("div");
-            t.setAttribute("id", i);
-            document.getElementById("OtherPartner").append(String(i), t);
+console.log(PartnerList);
+
+window.onload = () => {
+    document.getElementById("WindowIndex").textContent = Index;
+    setTimeout(() => {
+        PartnerList.forEach((i) => {
+            let div = document.createElement("div"), divX = document.createElement("p"), divY = document.createElement("p");
+            div.setAttribute("id", i);
+            divX.setAttribute("id", String(i)+"X");
+            divY.setAttribute("id", String(i)+"Y");
+            div.append("Partner: "+String(i), document.createElement("p"))
+            div.append("x: ", divX);
+            div.append("y: ", divY);
+            document.getElementById("OtherPartner").append(div);
         })
-    }, 200);
+    }, 50);
 
+    // HANDLE WINDOW MOVE
+
+    var MovingState = "False";
+
+    var coordinate = {
+        x: window.screenX,
+        y: window.screenY
+    };
+
+    let cox = document.getElementById("coordinateX");
+    let coy = document.getElementById("coordinateY");
+
+    cox.textContent = coordinate.x;
+    coy.textContent = coordinate.y;
+
+    setInterval(()=>{
+        if(window.screenX!=coordinate.x || window.screenY!=coordinate.y){
+            coordinate = {
+                x: window.screenX,
+                y: window.screenY
+            };
+            cox.textContent = coordinate.x;
+            coy.textContent = coordinate.y;
+            MovingState = "True";
+            bc.postMessage({Request: "CoordinateChange", PartnerID: Index, Coordinate: coordinate});
+        }else{
+            MovingState = "False";
+        }
+        document.getElementById("moving-state").textContent = MovingState;
+        document.getElementById("moving-state").style.color = (MovingState=="False"?"red":"green");
+    }, 50);
+}
+
+window.onbeforeunload = ()=>{
+    PartnerList.splice(Index-1, 1);
+    if(PartnerList.length == 0) localStorage.clear();
+    else localStorage.setItem("PartnerList", PartnerList.join("-"));
 }
