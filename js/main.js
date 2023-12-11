@@ -4,10 +4,16 @@ bc.addEventListener("message", e => {
     if(e.data.Request=="CoordinateChange"){
         document.getElementById(String(e.data.PartnerID)+"X").textContent = e.data.Coordinate.x;
         document.getElementById(String(e.data.PartnerID)+"Y").textContent = e.data.Coordinate.y;
-        var t1 = e.data.Coordinate.y - window.screenY, t2 = e.data.Coordinate.x - window.screenX;
-        document.getElementById("ball").style.left = (t2<0?0:(t2>200?200:t2));
-        document.getElementById("ball").style.top = (t1<0?0:(t1>200?200:t1));
-        console.log({top: t1, left: t2});
+        var t1 = e.data.Coordinate.y , t2 = e.data.Coordinate.x ;
+        let ball = document.getElementById("ball");
+        console.log(ball);
+        // if(t2<0) t2 = 0;
+        // else if(t2>200) t2 = 200;
+        // if(t1<0) t1=0;
+        // else if(t1>200) t1 = 200;
+        ball.style.left = String(t2-150)+"px";
+        ball.style.top = String(t1-150)+"px";
+        console.log({top: t1, left: t2});   
     }
 });
 
@@ -79,7 +85,12 @@ window.onload = () => {
             cox.textContent = coordinate.x;
             coy.textContent = coordinate.y;
             MovingState = "True";
-            bc.postMessage({Request: "CoordinateChange", PartnerID: Index, Coordinate: coordinate});
+            var element = document.getElementById('ball');
+            var rect = element.getBoundingClientRect();
+            
+            var elementTopLeftXOnScreen = rect.left + window.screenX + 11.5 + 25;
+            var elementTopLeftYOnScreen = rect.top + window.screenY + 198.5 - 15;   
+            bc.postMessage({Request: "CoordinateChange", PartnerID: Index, Coordinate: {x: elementTopLeftXOnScreen, y: elementTopLeftYOnScreen}});    
         }else{
             MovingState = "False";
         }
