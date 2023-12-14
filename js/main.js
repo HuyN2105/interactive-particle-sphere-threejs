@@ -2,18 +2,27 @@ const bc = new BroadcastChannel("channel");
 
 bc.addEventListener("message", e => {
     if(e.data.Request=="CoordinateChange"){
-        document.getElementById(String(e.data.PartnerID)+"X").textContent = e.data.Coordinate.x;
-        document.getElementById(String(e.data.PartnerID)+"Y").textContent = e.data.Coordinate.y;
-        var t1 = e.data.Coordinate.y , t2 = e.data.Coordinate.x ;
-        let ball = document.getElementById("ball");
-        console.log(ball);
-        // if(t2<0) t2 = 0;
-        // else if(t2>200) t2 = 200;
-        // if(t1<0) t1=0;
-        // else if(t1>200) t1 = 200;
-        ball.style.left = String(t2-150)+"px";
-        ball.style.top = String(t1-150)+"px";
-        console.log({top: t1, left: t2});   
+        var partnerX = e.data.Coordinate.x,
+        partnerY = e.data.Coordinate.y;
+        document.getElementById(String(e.data.PartnerID)+"X").textContent = partnerX;
+        document.getElementById(String(e.data.PartnerID)+"Y").textContent = partnerY;
+
+        var elementRect = document.getElementById('outerBox').getBoundingClientRect();
+            
+        var elementXOnScreen = elementRect.left + window.screenX + 11.5 + 25;
+        var elementYOnScreen = elementRect.top + window.screenY + 198.5 - 15;
+
+        var leftAdjustment = Math.abs(Math.abs(elementXOnScreen - partnerX)/2),
+        topAdjustment = Math.abs(Math.abs(elementYOnScreen - partnerY)/2);
+        if(elementXOnScreen > partnerX) leftAdjustment*=-1;
+        if(elementYOnScreen > partnerY) topAdjustment*=-1;
+        if(topAdjustment<0) topAdjustment = 0;
+        else if(topAdjustment>200) topAdjustment = 200;
+        if(leftAdjustment<0) leftAdjustment=0;
+        else if(leftAdjustment>200) leftAdjustment = 200;
+        ball.style.left = String(leftAdjustment)+"px";
+        ball.style.top = String(topAdjustment)+"px";
+        // console.log({top: leftAdjustment, left: topAdjustment});   
     }
 });
 
@@ -85,18 +94,18 @@ window.onload = () => {
             cox.textContent = coordinate.x;
             coy.textContent = coordinate.y;
             MovingState = "True";
-            var element = document.getElementById('ball');
-            var rect = element.getBoundingClientRect();
+            var elementRect = document.getElementById('outerBox').getBoundingClientRect();
             
-            var elementTopLeftXOnScreen = rect.left + window.screenX + 11.5 + 25;
-            var elementTopLeftYOnScreen = rect.top + window.screenY + 198.5 - 15;   
-            bc.postMessage({Request: "CoordinateChange", PartnerID: Index, Coordinate: {x: elementTopLeftXOnScreen, y: elementTopLeftYOnScreen}});    
+            var elementXOnScreen = elementRect.left + window.screenX + 112;
+            var elementYOnScreen = elementRect.top + window.screenY + 210.5;   
+            console.log({x: elementXOnScreen, y: elementYOnScreen});
+            bc.postMessage({Request: "CoordinateChange", PartnerID: Index, Coordinate: {x: elementXOnScreen, y: elementYOnScreen}});    
         }else{
             MovingState = "False";
         }
         document.getElementById("moving-state").textContent = MovingState;
         document.getElementById("moving-state").style.color = (MovingState=="False"?"red":"green");
-    }, 50);
+    }, 30);
 }
 
 window.onbeforeunload = ()=>{
